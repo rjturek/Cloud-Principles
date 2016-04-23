@@ -1,0 +1,67 @@
+{
+  "variables": {
+    "access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "aws_region": "{{env `DEFAULT_REGION_NAME`}}"
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `access_key`}}",
+    "secret_key": "{{user `secret_key`}}",
+    "region": "{{user `aws_region`}}",
+    "source_ami": "ami-fce3c696",
+    "instance_type": "t2.micro",
+    "ssh_username": "ubuntu",
+    "ami_name": "cloud-principles {{timestamp}}"
+  }],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "scripts/security.sh",
+      "destination": "/tmp/security.sh"
+    },
+    {
+      "type": "shell",
+      "override": {
+        "amazon-ebs": {
+          "scripts": [
+          ]
+        }
+      }
+      "inline": [
+        "sleep 30",
+        "sudo apt-add-repository ppa:rquillo/ansible",
+        "sudo /usr/bin/apt-get update",
+        "sudo /usr/bin/apt-get -y install ansible"
+      ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "provision.yml"
+    }
+  ]
+}
+
+
+{  
+      "type": "shell",
+      "execute_command": "echo 'vagrant'|sudo -S sh '{{.Path}}'",
+      "override": {
+        "virtualbox-iso": {
+          "scripts": [
+            "scripts/base.sh",
+            "scripts/sandbox-vagrant-user-settings.sh",
+            "scripts/virtualbox-configurations.sh",
+            "scripts/trp-custom-configurations.sh",
+            "scripts/install-and-configure-eclipse-luna.sh",
+            "scripts/custom-sandbox-security-settings.sh",
+            "scripts/websphere7-base-install.sh",
+            "scripts/websphere7-updi-install.sh",
+            "scripts/websphere7-fixpack-install.sh",
+            "scripts/sandbox-tooling-configurations.sh",
+            "scripts/sandbox-developer-user-settings.sh",
+            "scripts/cleanup.sh"
+          ]
+        }
+      }
+    }
